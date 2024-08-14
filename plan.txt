@@ -1,0 +1,41 @@
+Project Plan:
+1. Overview:
+The Personal Expense Tracker is a command-line application that allows users to manage their daily expenses. It provides features to add, view, edit, delete expenses, and generate statistics based on the data.
+
+2. Features:
+Expense Categories: Users can define expense categories like "Food," "Transport," etc.
+Add Expense: Users can add an expense with details like amount, category, and date.
+View Expenses: Display all expenses or filter by category/date.
+Edit/Delete Expenses: Modify or remove an existing expense.
+Data Persistence: Save and load expenses from a file.
+Statistics: Calculate and display total expenses, average spending, and more.
+3. Classes and Functions:
+Class: Expense
+
+Attributes:
+double amount
+std::string category
+std::string date
+Methods:
+void display() const - Display the expense details.
+Class: ExpenseManager
+
+Attributes:
+std::vector<Expense> expenses
+std::string filename
+Methods:
+void addExpense(const Expense& exp)
+void viewExpenses() const
+void editExpense(int index, const Expense& exp)
+void deleteExpense(int index)
+void loadFromFile()
+void saveToFile() const
+void displayStatistics() const
+Helper Functions:
+
+void showMenu()
+void handleAddExpense(ExpenseManager& manager)
+void handleViewExpenses(const ExpenseManager& manager)
+void handleEditExpense(ExpenseManager& manager)
+void handleDeleteExpense(ExpenseManager& manager)
+void handleStatistics(const ExpenseManager& manager)
