@@ -5,7 +5,117 @@
 #include <iomanip>
 #include <algorithm>
 #include <map>
+#include <limits>
 
+// User class
+class User {
+private:
+    std::string username;
+    std::string password;
+
+public:
+    User(const std::string& user, const std::string& pass)
+        : username(user), password(pass) {}
+
+    bool authenticate(const std::string& pass) const {
+        return password == pass;
+    }
+
+    void registerUser(const std::string& user, const std::string& pass) {
+        username = user;
+        password = pass;
+    }
+};
+
+// CSV Exporter class
+class CSVExporter {
+public:
+    void exportExpenses(const ExpenseManager& expManager, const std::string& filename) const {
+        std::ofstream file(filename);
+        if (!file.is_open()) {
+            std::cout << "Could not open file for writing.\n";
+            return;
+        }
+
+        file << "Amount,Category,Date\n";
+        for (const auto& exp : expManager.getExpenses()) {
+            file << exp.amount << "," << exp.category << "," << exp.date << "\n";
+        }
+
+        file.close();
+        std::cout << "Expenses exported to " << filename << std::endl;
+    }
+};
+
+// Custom Report Generator class
+class CustomReportGenerator {
+public:
+    void generateReport(const ExpenseManager& expManager, double minAmount, double maxAmount) const {
+        std::cout << "Custom Report:\n";
+        for (const auto& exp : expManager.getExpenses()) {
+            if (exp.amount >= minAmount && exp.amount <= maxAmount) {
+                exp.display();
+            }
+        }
+    }
+};
+
+// Data Backup Manager class
+class DataBackupManager {
+public:
+    void backupData(const ExpenseManager& expManager, const CategoryManager& catManager, const std::string& backupFilename) const {
+        std::ofstream file(backupFilename);
+        if (!file.is_open()) {
+            std::cout << "Could not open file for backup.\n";
+            return;
+        }
+
+        // Backup expenses
+        file << "Expenses:\n";
+        for (const auto& exp : expManager.getExpenses()) {
+            file << exp.amount << "," << exp.category << "," << exp.date << "\n";
+        }
+
+        // Backup categories
+        file << "\nCategories:\n";
+        for (const auto& cat : catManager.getCategories()) {
+            file << cat << "\n";
+        }
+
+        file.close();
+        std::cout << "Data backed up to " << backupFilename << std::endl;
+    }
+
+    void restoreData(ExpenseManager& expManager, CategoryManager& catManager, const std::string& backupFilename) const {
+        std::ifstream file(backupFilename);
+        if (!file.is_open()) {
+            std::cout << "Could not open file for restore.\n";
+            return;
+        }
+
+        std::string line;
+        std::getline(file, line); // Skip "Expenses:" header
+        while (std::getline(file, line) && !line.empty()) {
+            std::istringstream iss(line);
+            double amount;
+            std::string category, date;
+            std::getline(iss, date, ',');
+            iss >> amount;
+            std::getline(iss, category, ',');
+            expManager.addExpense(Expense(amount, category, date));
+        }
+
+        std::getline(file, line); // Skip "Categories:" header
+        while (std::getline(file, line)) {
+            catManager.addCategory(line);
+        }
+
+        file.close();
+        std::cout << "Data restored from " << backupFilename << std::endl;
+    }
+};
+
+// Expense and Category Manager classes (same as before)
 class Expense {
 public:
     double amount;
@@ -80,8 +190,10 @@ public:
         }
         file.close();
     }
-        std::vector<std::string> categories;  // Change this to public
 
+    const std::vector<std::string>& getCategories() const {
+        return categories;
+    }
 };
 
 class ExpenseManager {
@@ -148,84 +260,9 @@ public:
         file.close();
     }
 
-    void searchExpensesByCategory(const std::string& category) const {
-        for (const auto& exp : expenses) {
-            if (exp.category == category) {
-                exp.display();
-            }
-        }
+    const std::vector<Expense>& getExpenses() const {
+        return expenses;
     }
-
-    void searchExpensesByDate(const std::string& date) const {
-        for (const auto& exp : expenses) {
-            if (exp.date == date) {
-                exp.display();
-            }
-        }
-    }
-
-    void searchExpensesByAmount(double amount) const {
-        for (const auto& exp : expenses) {
-            if (exp.amount == amount) {
-                exp.display();
-            }
-        }
-    }
-
-    void generateMonthlyReport(const std::string& month) const {
-        double total = 0;
-        std::map<std::string, double> categoryTotals;
-        double highest = 0, lowest = std::numeric_limits<double>::max();
-
-        for (const auto& exp : expenses) {
-            if (exp.date.substr(0, 7) == month) {
-                total += exp.amount;
-                categoryTotals[exp.category] += exp.amount;
-                if (exp.amount > highest) highest = exp.amount;
-                if (exp.amount < lowest) lowest = exp.amount;
-            }
-        }
-
-        std::cout << "Monthly Report for " << month << ":\n";
-        std::cout << "Total Expenses: $" << std::fixed << std::setprecision(2) << total << std::endl;
-        std::cout << "Category-wise Breakdown:\n";
-        for (const auto& [category, total] : categoryTotals) {
-            std::cout << "- " << category << ": $" << total << std::endl;
-        }
-        std::cout << "Highest Expense: $" << highest << std::endl;
-        std::cout << "Lowest Expense: $" << lowest << std::endl;
-    }
-
-    void displayStatistics() const {
-        double total = 0;
-        std::map<std::string, double> categoryTotals;
-
-        for (const auto& exp : expenses) {
-            total += exp.amount;
-            categoryTotals[exp.category] += exp.amount;
-        }
-
-        std::cout << "Total Expenses: $" << std::fixed << std::setprecision(2) << total << std::endl;
-        std::cout << "Average Expense: $" << std::fixed << std::setprecision(2) << total / expenses.size() << std::endl;
-        std::cout << "Number of Expenses: " << expenses.size() << std::endl;
-
-        std::string mostCommonCategory;
-        double maxCategoryTotal = 0;
-        for (const auto& [category, total] : categoryTotals) {
-            if (total > maxCategoryTotal) {
-                maxCategoryTotal = total;
-                mostCommonCategory = category;
-            }
-        }
-
-        std::cout << "Most Common Category: " << mostCommonCategory << std::endl;
-        std::cout << "Expense Distribution:\n";
-        for (const auto& [category, total] : categoryTotals) {
-            std::cout << "- " << category << ": $" << total << std::endl;
-        }
-    }
-        std::vector<Expense> expenses;  // Change this to public
-
 };
 
 // Functions for handling user input and managing the program
@@ -239,159 +276,65 @@ void showMenu() {
     std::cout << "6. Monthly Report\n";
     std::cout << "7. View Statistics\n";
     std::cout << "8. Manage Categories\n";
-    std::cout << "9. Exit\n";
+    std::cout << "9. Export Expenses to CSV\n";
+    std::cout << "10. Generate Custom Report\n";
+    std::cout << "11. Backup Data\n";
+    std::cout << "12. Restore Data\n";
+    std::cout << "13. Exit\n";
 }
 
-void handleAddExpense(ExpenseManager& expManager, CategoryManager& catManager) {
-    double amount;
-    std::string category, date;
-
-    std::cout << "Enter amount: ";
-    std::cin >> amount;
-    std::cin.ignore();
-
-    catManager.viewCategories();
-    std::cout << "Select category: ";
-    int catIndex;
-    std::cin >> catIndex;
-    std::cin.ignore();
-    category = catManager.categories[catIndex - 1];
-
-    std::cout << "Enter date (YYYY-MM-DD): ";
-    std::getline(std::cin, date);
-
-    expManager.addExpense(Expense(amount, category, date));
-    std::cout << "Expense added.\n";
+void handleExportToCSV(const ExpenseManager& expManager) {
+    std::string filename;
+    std::cout << "Enter filename to export to (e.g., expenses.csv): ";
+    std::getline(std::cin, filename);
+    CSVExporter exporter;
+    exporter.exportExpenses(expManager, filename);
 }
 
-void handleViewExpenses(const ExpenseManager& expManager) {
-    expManager.viewExpenses();
+void handleCustomReport(const ExpenseManager& expManager) {
+    double minAmount, maxAmount;
+    std::cout << "Enter minimum amount: ";
+    std::cin >> minAmount;
+    std::cout << "Enter maximum amount: ";
+    std::cin >> maxAmount;
+    std::cin.ignore();  // Clear newline character from buffer
+
+    CustomReportGenerator reportGenerator;
+    reportGenerator.generateReport(expManager, minAmount, maxAmount);
 }
 
-void handleEditExpense(ExpenseManager& expManager, CategoryManager& catManager) {
-    int index;
-    std::cout << "Enter the index of the expense to edit: ";
-    std::cin >> index;
-    std::cin.ignore();
-
-    handleAddExpense(expManager, catManager); // reuse addExpense to get new details
-    expManager.editExpense(index, expManager.expenses.back());
-    std::cout << "Expense edited.\n";
+void handleBackupData(const ExpenseManager& expManager, const CategoryManager& catManager) {
+    std::string filename;
+    std::cout << "Enter filename for backup (e.g., backup.txt): ";
+    std::getline(std::cin, filename);
+    DataBackupManager backupManager;
+    backupManager.backupData(expManager, catManager, filename);
 }
 
-void handleDeleteExpense(ExpenseManager& expManager) {
-    int index;
-    std::cout << "Enter the index of the expense to delete: ";
-    std::cin >> index;
-    std::cin.ignore();
-
-    expManager.deleteExpense(index);
-    std::cout << "Expense deleted.\n";
-}
-
-void handleSearchExpenses(const ExpenseManager& expManager) {
-    std::cout << "Search by: 1. Category 2. Date 3. Amount\n";
-    int choice;
-    std::cin >> choice;
-    std::cin.ignore();
-
-    if (choice == 1) {
-        std::string category;
-        std::cout << "Enter category: ";
-        std::getline(std::cin, category);
-        expManager.searchExpensesByCategory(category);
-    } else if (choice == 2) {
-        std::string date;
-        std::cout << "Enter date (YYYY-MM-DD): ";
-        std::getline(std::cin, date);
-        expManager.searchExpensesByDate(date);
-    } else if (choice == 3) {
-        double amount;
-        std::cout << "Enter amount: ";
-        std::cin >> amount;
-        std::cin.ignore();
-        expManager.searchExpensesByAmount(amount);
-    } else {
-        std::cout << "Invalid choice.\n";
-    }
-}
-
-void handleMonthlyReport(const ExpenseManager& expManager) {
-    std::string month;
-    std::cout << "Enter month (YYYY-MM): ";
-    std::getline(std::cin, month);
-    expManager.generateMonthlyReport(month);
-}
-
-void handleViewStatistics(const ExpenseManager& expManager) {
-    expManager.displayStatistics();
-}
-
-void handleManageCategories(CategoryManager& catManager) {
-    std::cout << "Category Management:\n";
-    std::cout << "1. Add Category\n";
-    std::cout << "2. View Categories\n";
-    std::cout << "3. Edit Category\n";
-    std::cout << "4. Delete Category\n";
-
-    int choice;
-    std::cin >> choice;
-    std::cin.ignore();
-
-    if (choice == 1) {
-        handleAddCategory(catManager);
-    } else if (choice == 2) {
-        handleViewCategories(catManager);
-    } else if (choice == 3) {
-        handleEditCategory(catManager);
-    } else if (choice == 4) {
-        handleDeleteCategory(catManager);
-    } else {
-        std::cout << "Invalid choice.\n";
-    }
-}
-
-void handleAddCategory(CategoryManager& catManager) {
-    std::string category;
-    std::cout << "Enter new category: ";
-    std::getline(std::cin, category);
-    catManager.addCategory(category);
-    std::cout << "Category added.\n";
-}
-
-void handleViewCategories(const CategoryManager& catManager) {
-    catManager.viewCategories();
-}
-
-void handleEditCategory(CategoryManager& catManager) {
-    int index;
-    catManager.viewCategories();
-    std::cout << "Enter the index of the category to edit: ";
-    std::cin >> index;
-    std::cin.ignore();
-
-    std::string newCategory;
-    std::cout << "Enter new category name: ";
-    std::getline(std::cin, newCategory);
-
-    catManager.editCategory(index, newCategory);
-    std::cout << "Category edited.\n";
-}
-
-void handleDeleteCategory(CategoryManager& catManager) {
-    int index;
-    catManager.viewCategories();
-    std::cout << "Enter the index of the category to delete: ";
-    std::cin >> index;
-    std::cin.ignore();
-
-    catManager.deleteCategory(index);
-    std::cout << "Category deleted.\n";
+void handleRestoreData(ExpenseManager& expManager, CategoryManager& catManager) {
+    std::string filename;
+    std::cout << "Enter filename to restore from (e.g., backup.txt): ";
+    std::getline(std::cin, filename);
+    DataBackupManager backupManager;
+    backupManager.restoreData(expManager, catManager, filename);
 }
 
 int main() {
     ExpenseManager expManager("expenses.txt");
     CategoryManager catManager("categories.txt");
+    User user("admin", "password");  // Simple example; in practice, handle securely
+
+    // Simulate user authentication
+    std::string username, password;
+    std::cout << "Enter username: ";
+    std::getline(std::cin, username);
+    std::cout << "Enter password: ";
+    std::getline(std::cin, password);
+
+    if (!user.authenticate(password)) {
+        std::cout << "Invalid username or password.\n";
+        return 1;
+    }
 
     while (true) {
         showMenu();
@@ -426,6 +369,18 @@ int main() {
                 handleManageCategories(catManager);
                 break;
             case 9:
+                handleExportToCSV(expManager);
+                break;
+            case 10:
+                handleCustomReport(expManager);
+                break;
+            case 11:
+                handleBackupData(expManager, catManager);
+                break;
+            case 12:
+                handleRestoreData(expManager, catManager);
+                break;
+            case 13:
                 std::cout << "Exiting program.\n";
                 return 0;
             default:
