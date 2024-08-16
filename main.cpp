@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <map>
 #include <limits>
+#include <ctime>
 
 // User class
 class User {
@@ -115,7 +116,7 @@ public:
     }
 };
 
-// Expense and Category Manager classes (same as before)
+// Expense class
 class Expense {
 public:
     double amount;
@@ -132,6 +133,7 @@ public:
     }
 };
 
+// Category Manager class
 class CategoryManager {
 private:
     std::vector<std::string> categories;
@@ -196,6 +198,7 @@ public:
     }
 };
 
+// Expense Manager class
 class ExpenseManager {
 private:
     std::vector<Expense> expenses;
@@ -265,81 +268,146 @@ public:
     }
 };
 
-// Functions for handling user input and managing the program
-void showMenu() {
-    std::cout << "\nExpense Tracker Menu:\n";
-    std::cout << "1. Add Expense\n";
-    std::cout << "2. View Expenses\n";
-    std::cout << "3. Edit Expense\n";
-    std::cout << "4. Delete Expense\n";
-    std::cout << "5. Search Expenses\n";
-    std::cout << "6. Monthly Report\n";
-    std::cout << "7. View Statistics\n";
-    std::cout << "8. Manage Categories\n";
-    std::cout << "9. Export Expenses to CSV\n";
-    std::cout << "10. Generate Custom Report\n";
-    std::cout << "11. Backup Data\n";
-    std::cout << "12. Restore Data\n";
-    std::cout << "13. Exit\n";
+// Function declarations for managing expenses
+void handleAddExpense(ExpenseManager& expManager, CategoryManager& catManager) {
+    double amount;
+    std::string category, date;
+
+    std::cout << "Enter amount: ";
+    std::cin >> amount;
+    std::cin.ignore();
+
+    std::cout << "Enter category (select a number from the list):\n";
+    catManager.viewCategories();
+    int catIndex;
+    std::cin >> catIndex;
+    std::cin.ignore();
+    category = catManager.getCategories()[catIndex - 1];
+
+    std::cout << "Enter date (YYYY-MM-DD): ";
+    std::getline(std::cin, date);
+
+    expManager.addExpense(Expense(amount, category, date));
+    std::cout << "Expense added.\n";
 }
 
-void handleExportToCSV(const ExpenseManager& expManager) {
-    std::string filename;
-    std::cout << "Enter filename to export to (e.g., expenses.csv): ";
-    std::getline(std::cin, filename);
-    CSVExporter exporter;
-    exporter.exportExpenses(expManager, filename);
+void handleViewExpenses(const ExpenseManager& expManager) {
+    std::cout << "Viewing all expenses:\n";
+    expManager.viewExpenses();
 }
 
-void handleCustomReport(const ExpenseManager& expManager) {
-    double minAmount, maxAmount;
-    std::cout << "Enter minimum amount: ";
-    std::cin >> minAmount;
-    std::cout << "Enter maximum amount: ";
-    std::cin >> maxAmount;
-    std::cin.ignore();  // Clear newline character from buffer
+void handleEditExpense(ExpenseManager& expManager, CategoryManager& catManager) {
+    int index;
+    std::cout << "Enter the index of the expense to edit: ";
+    std::cin >> index;
+    std::cin.ignore();
 
-    CustomReportGenerator reportGenerator;
-    reportGenerator.generateReport(expManager, minAmount, maxAmount);
+    double amount;
+    std::string category, date;
+
+    std::cout << "Enter new amount: ";
+    std::cin >> amount;
+    std::cin.ignore();
+
+    std::cout << "Enter new category (select a number from the list):\n";
+    catManager.viewCategories();
+    int catIndex;
+    std::cin >> catIndex;
+    std::cin.ignore();
+    category = catManager.getCategories()[catIndex - 1];
+
+    std::cout << "Enter new date (YYYY-MM-DD): ";
+    std::getline(std::cin, date);
+
+    expManager.editExpense(index, Expense(amount, category, date));
+    std::cout << "Expense edited.\n";
 }
 
-void handleBackupData(const ExpenseManager& expManager, const CategoryManager& catManager) {
-    std::string filename;
-    std::cout << "Enter filename for backup (e.g., backup.txt): ";
-    std::getline(std::cin, filename);
-    DataBackupManager backupManager;
-    backupManager.backupData(expManager, catManager, filename);
+void handleDeleteExpense(ExpenseManager& expManager) {
+    int index;
+    std::cout << "Enter the index of the expense to delete: ";
+    std::cin >> index;
+    std::cin.ignore();
+
+    expManager.deleteExpense(index);
+    std::cout << "Expense deleted.\n";
 }
 
-void handleRestoreData(ExpenseManager& expManager, CategoryManager& catManager) {
-    std::string filename;
-    std::cout << "Enter filename to restore from (e.g., backup.txt): ";
-    std::getline(std::cin, filename);
-    DataBackupManager backupManager;
-    backupManager.restoreData(expManager, catManager, filename);
+// Function declarations for managing categories
+void handleAddCategory(CategoryManager& catManager) {
+    std::string category;
+    std::cout << "Enter new category: ";
+    std::getline(std::cin, category);
+
+    catManager.addCategory(category);
+    std::cout << "Category added.\n";
 }
 
+void handleViewCategories(const CategoryManager& catManager) {
+    std::cout << "Viewing all categories:\n";
+    catManager.viewCategories();
+}
+
+void handleEditCategory(CategoryManager& catManager) {
+    int index;
+    std::cout << "Enter the index of the category to edit: ";
+    std::cin >> index;
+    std::cin.ignore();
+
+    std::string newCategory;
+    std::cout << "Enter new category name: ";
+    std::getline(std::cin, newCategory);
+
+    catManager.editCategory(index, newCategory);
+    std::cout << "Category edited.\n";
+}
+
+void handleDeleteCategory(CategoryManager& catManager) {
+    int index;
+    std::cout << "Enter the index of the category to delete: ";
+    std::cin >> index;
+    std::cin.ignore();
+
+    catManager.deleteCategory(index);
+    std::cout << "Category deleted.\n";
+}
+
+// Main function
 int main() {
-    ExpenseManager expManager("expenses.txt");
-    CategoryManager catManager("categories.txt");
-    User user("admin", "password");  // Simple example; in practice, handle securely
+    std::string expensesFile = "expenses.txt";
+    std::string categoriesFile = "categories.txt";
 
-    // Simulate user authentication
-    std::string username, password;
-    std::cout << "Enter username: ";
-    std::getline(std::cin, username);
+    ExpenseManager expManager(expensesFile);
+    CategoryManager catManager(categoriesFile);
+
+    User user("admin", "password"); // Replace with actual user registration and login system
+    std::string password;
     std::cout << "Enter password: ";
-    std::getline(std::cin, password);
+    std::cin >> password;
 
     if (!user.authenticate(password)) {
-        std::cout << "Invalid username or password.\n";
-        return 1;
+        std::cout << "Authentication failed. Exiting program.\n";
+        return 0;
     }
 
-    while (true) {
-        showMenu();
+    int choice;
 
-        int choice;
+    do {
+        std::cout << "\nPersonal Finance Tracker Menu:\n";
+        std::cout << "1. Add Expense\n";
+        std::cout << "2. View Expenses\n";
+        std::cout << "3. Edit Expense\n";
+        std::cout << "4. Delete Expense\n";
+        std::cout << "5. Add Category\n";
+        std::cout << "6. View Categories\n";
+        std::cout << "7. Edit Category\n";
+        std::cout << "8. Delete Category\n";
+        std::cout << "9. Export Expenses to CSV\n";
+        std::cout << "10. Generate Custom Report\n";
+        std::cout << "11. Backup Data\n";
+        std::cout << "12. Restore Data\n";
+        std::cout << "13. Exit\n";
+        std::cout << "Enter your choice: ";
         std::cin >> choice;
         std::cin.ignore();
 
@@ -357,34 +425,58 @@ int main() {
                 handleDeleteExpense(expManager);
                 break;
             case 5:
-                handleSearchExpenses(expManager);
+                handleAddCategory(catManager);
                 break;
             case 6:
-                handleMonthlyReport(expManager);
+                handleViewCategories(catManager);
                 break;
             case 7:
-                handleViewStatistics(expManager);
+                handleEditCategory(catManager);
                 break;
             case 8:
-                handleManageCategories(catManager);
+                handleDeleteCategory(catManager);
                 break;
-            case 9:
-                handleExportToCSV(expManager);
+            case 9: {
+                CSVExporter exporter;
+                std::string filename;
+                std::cout << "Enter filename for CSV export: ";
+                std::getline(std::cin, filename);
+                exporter.exportExpenses(expManager, filename);
                 break;
-            case 10:
-                handleCustomReport(expManager);
+            }
+            case 10: {
+                CustomReportGenerator reportGen;
+                double minAmount, maxAmount;
+                std::cout << "Enter minimum amount for the report: ";
+                std::cin >> minAmount;
+                std::cout << "Enter maximum amount for the report: ";
+                std::cin >> maxAmount;
+                reportGen.generateReport(expManager, minAmount, maxAmount);
                 break;
-            case 11:
-                handleBackupData(expManager, catManager);
+            }
+            case 11: {
+                DataBackupManager backupManager;
+                std::string backupFilename;
+                std::cout << "Enter filename for data backup: ";
+                std::getline(std::cin, backupFilename);
+                backupManager.backupData(expManager, catManager, backupFilename);
                 break;
-            case 12:
-                handleRestoreData(expManager, catManager);
+            }
+            case 12: {
+                DataBackupManager backupManager;
+                std::string restoreFilename;
+                std::cout << "Enter filename for data restore: ";
+                std::getline(std::cin, restoreFilename);
+                backupManager.restoreData(expManager, catManager, restoreFilename);
                 break;
+            }
             case 13:
                 std::cout << "Exiting program.\n";
-                return 0;
+                break;
             default:
-                std::cout << "Invalid choice.\n";
+                std::cout << "Invalid choice. Please try again.\n";
         }
-    }
+    } while (choice != 13);
+
+    return 0;
 }
