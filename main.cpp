@@ -7,12 +7,8 @@
 #include <map>
 #include <limits>
 #include <ctime>
-
-// Forward declaration of classes
 class ExpenseManager;
 class CategoryManager;
-
-// User class
 class User {
 private:
     std::string username;
@@ -31,8 +27,6 @@ public:
         password = pass;
     }
 };
-
-// Expense class
 class Expense {
 public:
     double amount;
@@ -48,8 +42,6 @@ public:
                   << ", Date: " << date << std::endl;
     }
 };
-
-// Category Manager class
 class CategoryManager {
 private:
     std::vector<std::string> categories;
@@ -113,8 +105,6 @@ public:
         return categories;
     }
 };
-
-// Expense Manager class
 class ExpenseManager {
 private:
     std::vector<Expense> expenses;
@@ -186,8 +176,6 @@ public:
         return expenses;
     }
 };
-
-// CSV Exporter class
 class CSVExporter {
 public:
     void exportExpenses(const ExpenseManager& expManager, const std::string& filename) const {
@@ -206,8 +194,6 @@ public:
         std::cout << "Expenses exported to " << filename << std::endl;
     }
 };
-
-// Custom Report Generator class
 class CustomReportGenerator {
 public:
     void generateReport(const ExpenseManager& expManager, double minAmount, double maxAmount) const {
@@ -219,8 +205,6 @@ public:
         }
     }
 };
-
-// Data Backup Manager class
 class DataBackupManager {
 public:
     void backupData(const ExpenseManager& expManager, const CategoryManager& catManager, const std::string& backupFilename) const {
@@ -277,8 +261,6 @@ public:
         std::cout << "Data restored from " << backupFilename << std::endl;
     }
 };
-
-// Function declarations for managing expenses
 void handleAddExpense(ExpenseManager& expManager, CategoryManager& catManager) {
     double amount;
     std::string category, date;
@@ -304,8 +286,6 @@ void handleAddExpense(ExpenseManager& expManager, CategoryManager& catManager) {
     expManager.addExpense(Expense(amount, category, date));
     std::cout << "Expense added successfully!\n";
 }
-
-// Main function
 int main() {
     ExpenseManager expManager("expenses.txt");
     CategoryManager catManager("categories.txt");
