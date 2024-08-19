@@ -16,10 +16,12 @@ Upcoming changes:
 I tried documenting the code correctly,so that anyone can jump in and edit.
 Future plans include gui and nodes with database integration.
 
-
 Documentation:
+
 ![image](https://github.com/user-attachments/assets/e338c2ae-2910-449f-aa63-56cffd0dafa0)
+
 Options: 
+
 ```
 1. Add Expense
 2. View Expenses
