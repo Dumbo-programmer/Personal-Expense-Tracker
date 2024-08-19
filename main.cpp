@@ -295,7 +295,7 @@ int main() {
 
     User user("admin", "password");
 
-    std::cout << "Welcome to Personal Finance Manager!\n";
+    std::cout << "Welcome to Personal Expense Tracker!\n";
 
     while (true) {
         std::cout << "\nMenu:\n"
@@ -411,4 +411,3 @@ int main() {
     }
     return 0;
 }
-
