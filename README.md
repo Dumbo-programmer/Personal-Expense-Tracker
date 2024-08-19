@@ -5,6 +5,7 @@ It is designed with user-friendly functionality, ensuring efficient and accurate
 
 
 Prerequisites:
+
 any modern cpp compiler works.
 or run the c++ file with GCC :
 ```
@@ -13,6 +14,7 @@ g++ main.cpp -o main
 or run the prebuilt .exe file 
 
 Upcoming changes:
+
 I tried documenting the code correctly,so that anyone can jump in and edit.
 Future plans include gui and nodes with database integration.
 
@@ -37,4 +39,5 @@ Options:
 First add any categories via manage category, and then add expense. The expenses will stay in .txt file. The rest are self explainatory  
 
 LICENSE:
+
 check the LICENSE file please 
